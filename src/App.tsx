@@ -8,6 +8,7 @@ export default function App() {
   const [plano, setPlano] = useState<Plano>("FREE");
   const [usos, setUsos] = useState(0);
   const [produto, setProduto] = useState("");
+  const [descricao, setDescricao] = useState("");
   const [compra, setCompra] = useState("");
   const [venda, setVenda] = useState("");
   const [resultado, setResultado] = useState("");
@@ -31,12 +32,9 @@ export default function App() {
 
   function registrarUso() {
     if (plano === "FREE") {
-      setResultado(
-        "🔒 Você atingiu o limite gratuito de hoje.\n\nAtualize para PRO e tenha uso ilimitado para vender todos os dias."
-      );
-      {
+      if (usos >= LIMITE_FREE) {
         setResultado(
-          "🔒 Limite diário atingido. Faça upgrade para PRO ou VITALÍCIO."
+          "🔒 Limite gratuito atingido. Faça upgrade para PRO ou VITALÍCIO para uso ilimitado."
         );
         return false;
       }
@@ -47,27 +45,59 @@ export default function App() {
     return true;
   }
 
+  // Função para gerar hashtags SEO
+  function gerarHashtags(produto: string, descricao: string) {
+    const nomeLimpo = produto
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+    const palavrasChave = descricao
+      .toLowerCase()
+      .split(/[\s,.!?]+/)
+      .filter((w) => w.length > 3);
+    const hashtags = new Set<string>();
+
+    hashtags.add(`#${nomeLimpo}`);
+    hashtags.add(`#Oferta${produto.replace(/\s+/g, "")}`);
+    palavrasChave.forEach((palavra) => {
+      const tag = palavra.replace(/[^a-zA-Z0-9]/g, "");
+      if (tag.length > 2) hashtags.add(`#${tag}`);
+    });
+    hashtags.add("#Promoção");
+    hashtags.add("#OfertaImperdível");
+    hashtags.add("#Desconto");
+
+    return Array.from(hashtags).join(" ");
+  }
+
+  // Gerador de anúncio persuasivo
   function gerarAnuncio() {
     if (!registrarUso()) return;
     if (!produto) return setResultado("Digite o nome do produto.");
+    if (!descricao)
+      return setResultado("Digite a descrição e benefícios do produto.");
 
-    const seo = produto.toLowerCase().replace(/\s+/g, "");
+    const beneficioPrincipal = descricao.split(".")[0] || "excelente qualidade";
+    const hashtags = gerarHashtags(produto, descricao);
 
-    setResultado(`
-                                                                                                                                                          🔥 ${produto.toUpperCase()} COM PREÇO IMPERDÍVEL!
+    const texto = `
+🔥 CHEGOU O ${produto.toUpperCase()} QUE TODO MUNDO ESTÁ QUERENDO! 🔥
 
-                                                                                                                                                          ✔ Alta qualidade
-                                                                                                                                                          ✔ Excelente custo-benefício
-                                                                                                                                                          ✔ Ideal para revenda
-                                                                                                                                                          ✔ Envio rápido
+✔ ${beneficioPrincipal}
+✔ Alta qualidade
+✔ Ótimo custo-benefício
+✔ Perfeito para revenda ou uso próprio
 
-                                                                                                                                                          ⚡ Estoque limitado!
-                                                                                                                                                          Garanta o seu agora.
+⚡ Estoque limitado! Garanta o seu agora antes que acabe!
+💨 Envio rápido e seguro.
 
-                                                                                                                                                          #${seo} #Promoção #Oferta #Desconto #FreteRápido
-                                                                                                                                                          `);
+${hashtags}
+    `;
+    setResultado(texto);
   }
 
+  // Calculadora de lucro, margem e ROI
   function calcularLucro() {
     if (!registrarUso()) return;
 
@@ -89,51 +119,60 @@ export default function App() {
     const preco50 = precoCompra / (1 - 0.5);
 
     setResultado(`
-                                                                                                                                                                                                                        📊 ANÁLISE ESTRATÉGICA
+📊 ANÁLISE ESTRATÉGICA
 
-                                                                                                                                                                                                                        💰 Lucro: R$ ${lucro.toFixed(
-                                                                                                                                                                                                                          2
-                                                                                                                                                                                                                        )}
-                                                                                                                                                                                                                        📈 Margem: ${margem.toFixed(
-                                                                                                                                                                                                                          1
-                                                                                                                                                                                                                        )}%
-                                                                                                                                                                                                                        🚀 ROI: ${roi.toFixed(
-                                                                                                                                                                                                                          1
-                                                                                                                                                                                                                        )}%
+💰 Lucro: R$ ${lucro.toFixed(2)}
+📈 Margem: ${margem.toFixed(1)}%
+🚀 ROI: ${roi.toFixed(1)}%
 
-                                                                                                                                                                                                                        🎯 ${classificacao}
+🎯 ${classificacao}
 
-                                                                                                                                                                                                                        💡 Sugestão de Preço:
-                                                                                                                                                                                                                        • 40% margem → R$ ${preco40.toFixed(
-                                                                                                                                                                                                                          2
-                                                                                                                                                                                                                        )}
-                                                                                                                                                                                                                        • 50% margem → R$ ${preco50.toFixed(
-                                                                                                                                                                                                                          2
-                                                                                                                                                                                                                        )}
-                                                                                                                                                                                                                        `);
+💡 Sugestão de Preço:
+• 40% margem → R$ ${preco40.toFixed(2)}
+• 50% margem → R$ ${preco50.toFixed(2)}
+    `);
   }
 
-  function gerarWhatsApp() {
+  // Respostas WhatsApp IA
+  function gerarRespostasWhatsAppIA() {
     if (!registrarUso()) return;
+    if (!produto || !descricao) {
+      return setResultado(
+        "Preencha produto e descrição para gerar respostas inteligentes."
+      );
+    }
 
-    setResultado(`
-                                                                                                                                                                                                                                    📲 RESPOSTAS PRONTAS:
+    const beneficioPrincipal = descricao.split(".")[0] || "excelente qualidade";
+    const estoque = 5;
 
-                                                                                                                                                                                                                                    1️⃣ Primeiro contato:
-                                                                                                                                                                                                                                    Olá! 👋 Temos disponível sim. Produto original e envio rápido.
+    const respostas = {
+      primeiroContato: `Olá! 👋 Temos o ${produto}, ${beneficioPrincipal}. Posso te passar mais detalhes e fotos se quiser!`,
+      pedidoDesconto: `Entendo que quer um bom preço! 😊 Posso oferecer um desconto especial se você fechar agora, garantindo ${produto} com envio rápido e seguro.`,
+      prazoEntrega: `O ${produto} é enviado imediatamente após a confirmação do pedido. Estimativa de entrega: 1-3 dias úteis dependendo da sua região. 📦`,
+      urgencia: `⚡ Atenção! Temos apenas ${estoque} unidades disponíveis do ${produto}. Não perca a chance de garantir o seu antes que acabe!`,
+      fechamento: `Se quiser, posso confirmar seu pedido de ${produto} agora e garantir o melhor preço + envio rápido. 🚀`,
+    };
 
-                                                                                                                                                                                                                                    2️⃣ Pedido de desconto:
-                                                                                                                                                                                                                                    Consigo melhorar o valor para fechar agora 😉
+    const textoFormatado = `
+📲 RESPOSTAS WHATSAPP (IA):
 
-                                                                                                                                                                                                                                    3️⃣ Prazo:
-                                                                                                                                                                                                                                    Envio rápido e seguro.
+1️⃣ Primeiro contato:
+${respostas.primeiroContato}
 
-                                                                                                                                                                                                                                    4️⃣ Urgência:
-                                                                                                                                                                                                                                    Últimas unidades disponíveis ⚡
+2️⃣ Pedido de desconto:
+${respostas.pedidoDesconto}
 
-                                                                                                                                                                                                                                    5️⃣ Fechamento:
-                                                                                                                                                                                                                                    Posso confirmar seu pedido?
-                                                                                                                                                                                                                                    `);
+3️⃣ Prazo de entrega:
+${respostas.prazoEntrega}
+
+4️⃣ Urgência / Estoque limitado:
+${respostas.urgencia}
+
+5️⃣ Fechamento:
+${respostas.fechamento}
+    `;
+
+    setResultado(textoFormatado);
   }
 
   function copiar() {
@@ -186,8 +225,14 @@ export default function App() {
           value={produto}
           onChange={(e) => setProduto(e.target.value)}
         />
+        <textarea
+          style={styles.textarea}
+          placeholder="Descrição e benefícios do produto"
+          value={descricao}
+          onChange={(e) => setDescricao(e.target.value)}
+        />
         <button style={styles.button} onClick={gerarAnuncio}>
-          Gerar
+          Gerar Anúncio
         </button>
       </div>
 
@@ -208,14 +253,14 @@ export default function App() {
           onChange={(e) => setVenda(e.target.value)}
         />
         <button style={styles.button} onClick={calcularLucro}>
-          Calcular
+          Calcular Lucro
         </button>
       </div>
 
       <div style={styles.card}>
-        <h2>Respostas WhatsApp</h2>
-        <button style={styles.button} onClick={gerarWhatsApp}>
-          Gerar
+        <h2>Respostas WhatsApp IA</h2>
+        <button style={styles.button} onClick={gerarRespostasWhatsAppIA}>
+          Gerar Respostas Inteligentes
         </button>
       </div>
 
@@ -236,7 +281,7 @@ export default function App() {
         <div style={styles.resultado}>
           <div style={{ whiteSpace: "pre-wrap" }}>{resultado}</div>
           <button style={styles.button} onClick={copiar}>
-            Copiar
+            Copiar Texto
           </button>
         </div>
       )}
@@ -268,6 +313,15 @@ const styles: any = {
     borderRadius: 5,
     border: "none",
   },
+  textarea: {
+    width: "100%",
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 5,
+    border: "none",
+    minHeight: 80,
+    resize: "vertical",
+  },
   button: {
     width: "100%",
     padding: 10,
@@ -295,5 +349,6 @@ const styles: any = {
     whiteSpace: "pre-wrap",
     fontSize: 14,
     lineHeight: 1.6,
+    marginTop: 20,
   },
 };
